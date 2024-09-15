@@ -1,9 +1,8 @@
 import {
-  Directions,
   getMapData,
-  Marker,
   show3dMap,
   Space,
+  Marker,
 } from "@mappedin/mappedin-js";
 import "@mappedin/mappedin-js/lib/index.css";
 import "./styles.css";
@@ -12,7 +11,10 @@ import mentor2 from './mentor_2.png';
 import mentor3 from './mentor_3.png';
 import mentor4 from './mentor_4.png';
 import mentor5 from './mentor_5.png';
-
+import hacker1 from './hacker_1.png';
+import hacker2 from './hacker_2.png';
+import hacker3 from './hacker_3.png';
+import hacker4 from './hacker_4.png';
 
 interface Asset {
   name: string;
@@ -28,38 +30,35 @@ interface Asset {
 function createGuardMarker(
   color: string = "#ffffff",
   label: string = "Contractor",
-  image: string = ""
+  image: string = "",
+  square: boolean = false
 ) {
-  const imageUrl = image || "https://path-to-your-default-image.png"; // Fallback image URL
-  const html = `
-  <div class="" style="">
-    <div class="" style="border:3px solid ${
-      image === "" ? "#ffffff" : color
-    };background-color:${
-    image === "" ? color : "white"
-  };width:44px;height:44px;border-radius:32px;overflow:hidden;box-shadow: 0px 3px 15px -3px rgba(0,0,0,0.3);">
-    ${
-      image === ""
-        ? `<svg xmlns="http://www.w3.org/2000/svg" viewBox="-10 -10 44 44" fill="white"><path d="M3.78307 2.82598L12 1L20.2169 2.82598C20.6745 2.92766 21 3.33347 21 3.80217V13.7889C21 15.795 19.9974 17.6684 18.3282 18.7812L12 23L5.6718 18.7812C4.00261 17.6684 3 15.795 3 13.7889V3.80217C3 3.33347 3.32553 2.92766 3.78307 2.82598Z"></path></svg>`
-        : `<img src="${imageUrl}" style="width:44px;height:44px;border-radius:22px;object-fit:cover" onerror="this.onerror=null;this.src='https://path-to-your-fallback-image.png';">`
-    }
+  const imageUrl = image || hacker1; // Default or fallback image URL
+  const borderRadius = square ? "0px" : "22px"; // Square for hackers, rounded for mentors
+  const styleForHackers = square ? `
+    <div style="display:flex;align-items:center;padding:4px;background-color:#f0f0f0;border-radius:4px;box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+      <div style="width:30px;height:30px;border-radius:15px;overflow:hidden;margin-right:8px;">
+        <img src="${imageUrl}" style="width:100%;height:100%;object-fit:cover" onerror="this.onerror=null;this.src='https://path-to-your-fallback-image.png';">
+      </div>
+      <div style="flex-grow:1;">${label}</div>
+    </div>
+  ` : `
+    <div class="" style="border:3px solid ${color};background-color:${color};width:44px;height:44px;border-radius:${borderRadius};overflow:hidden;box-shadow: 0px 3px 15px -3px rgba(0,0,0,0.3);">
+      <img src="${imageUrl}" style="width:44px;height:44px;border-radius:${borderRadius};object-fit:cover" onerror="this.onerror=null;this.src='https://path-to-your-fallback-image.png';">
     </div>
     <div style="text-align:center;">${label}</div>
-  </div>`;
-  return html;
-}
+  `;
 
+  return `<div>${styleForHackers}</div>`;
+}
 async function init() {
-  // See Trial API key Terms and Conditions
-  // https://developer.mappedin.com/web/v6/trial-keys-and-maps/
   const mapData = await getMapData({
     key: "mik_Qar1NBX1qFjtljLDI52a60753",
     secret: "mis_CXFS9WnkQkzQmy9GCt4ucn2D68zNRgVa2aiJj5hEIFM8aa40fee",
     mapId: "66ce20fdf42a3e000b1b0545",
-    viewId: "JN5Y", // Add your viewId here
+    viewId: "JN5Y",
   });
 
-  //Display the default map in the mappedin-map div with outdoor view styling.
   const mapView = await show3dMap(
     document.getElementById("mappedin-map") as HTMLDivElement,
     mapData,
@@ -100,6 +99,27 @@ async function init() {
     });
   }
 
+  function addHackathonSaying(saying: string, image: string, color: string = "#FF6347") {
+    const space = getRandomSpace();
+    mapView.Markers.add(
+      space,
+      createGuardMarker(color, saying, image, true),
+      { rank: "always-visible" }
+    );
+  }
+
+  addAsset("Mentor 1", mentor1, "#3DA93B");
+  addAsset("Mentor 2", mentor2, "#F6C644");
+  addAsset("Mentor 3", mentor3, "#FA7921");
+  addAsset("Mentor 4", mentor4, "#393271");
+  addAsset("Mentor 5", mentor5, "#0279FF");
+
+  // Initialize hackathon sayings across the map
+  addHackathonSaying("I'm so sleepy", hacker1, "#FF6347");
+  addHackathonSaying("Running upon many errors", hacker2, "#FF6347");
+  addHackathonSaying("At the workshop", hacker3, "#FF6347");
+  addHackathonSaying("Networking right now!!", hacker4, "#FF6347");
+
   function updateAsset(a: Asset, duration: number) {
     if (!a.directions || a.directions.distance == 0) {
       a.destinationSpace = getRandomSpace();
@@ -134,13 +154,6 @@ async function init() {
       a.step += 1;
     }
   }
-
-  addAsset("Mentor 1", mentor1, "#3DA93B");
-  addAsset("Mentor 2", mentor2, "#F6C644");
-  addAsset("Mentor 3", mentor3, "#FA7921");
-  addAsset("Mentor 4", mentor4, "#393271");
-  addAsset("Mentor 5", mentor5, "#0279FF");
-  
 
   function updatePositions() {
     assets.forEach((a) => {
